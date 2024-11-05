@@ -20,7 +20,7 @@ class PlayerAPI(MethodView):
 
     def get(self, player_id):
         # Get player from database
-        player = app.dynamodb.get_item_by_id(tablename="players", key={"player_id": player_id})
+        player = app.dynamodb.get_item_by_id("players", {"player_id": player_id})
         if not player:
             return format_response("Failed to query dynamodb", 500)
         if not player.get("Item"):
@@ -52,7 +52,7 @@ class PlayerAPI(MethodView):
         # Update player in db if needed
         if updated:
             player_data["modified"] = datetime.now()
-            app.dynamodb.save_item(self.schema.dump(player_data))
+            player_data = app.dynamodb.save_item("players", self.schema.dump(player_data))
 
         return format_response(player_data, 200)
 

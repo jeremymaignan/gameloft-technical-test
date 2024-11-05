@@ -3,16 +3,7 @@ PYTHON=python3
 FLASK_DEBUG=development
 
 # Targets
-.PHONY: help install run test lint clean
-
-help: ## Show this help message
-	@echo "Makefile for Flask Project"
-	@echo ""
-	@echo "Usage:"
-	@echo "  make <target>"
-	@echo ""
-	@echo "Targets:"
-	@grep -E '## ' $(MAKEFILE_LIST) | sed 's/## //'
+.PHONY: install run test lint clean
 
 install: ## Install dependencies
 	@echo "Installing dependencies..."
@@ -24,12 +15,22 @@ run: ## Run the Flask application
 
 test: ## Run tests
 	@echo "Running tests..."
-	$(PYTHON) -m pytest
+	$(PYTHON) -m unittest tests/*/*.py
 
 lint: ## Run linters
 	@echo "Running linters..."
-	isort *.py controllers/*.py schemas/*.py services/*.py
-	$(PYTHON) -m pylint --rcfile=.pylintrc *.py controllers/*.py schemas/*.py services/*.py
+	$(PYTHON) -m isort \
+		*.py \
+		controllers/*.py \
+		schemas/*.py \
+		services/*.py \
+		tests/services/*.py
+	$(PYTHON) -m pylint --rcfile=.pylintrc \
+		*.py \
+		controllers/*.py \
+		schemas/*.py \
+		services/*.py \
+		tests/services/*.py
 
 clean: ## Clean up the project
 	@echo "Cleaning up..."

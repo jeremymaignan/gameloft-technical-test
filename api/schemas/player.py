@@ -5,7 +5,7 @@ from schemas.device import DeviceSchema
 
 
 class PlayerSchema(Schema):
-    class Meta: # pylint: disable=too-few-public-methods
+    class Meta: #pylint: disable=too-few-public-methods
         # This allows for unknown fields to be included
         unknown = INCLUDE
 
