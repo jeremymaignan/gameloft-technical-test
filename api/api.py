@@ -1,7 +1,10 @@
+import os
+
+from dotenv import load_dotenv
 from flask import Flask
 from flask_cors import CORS
-from dotenv import load_dotenv
-import os
+
+from controllers.campaign import campaign_bp
 from controllers.player import player_bp
 from dynamodb import DynamoDB
 
@@ -17,6 +20,7 @@ app.dynamodb = DynamoDB(
 
 # Register the blueprint
 app.register_blueprint(player_bp)
+app.register_blueprint(campaign_bp)
 
 if __name__ == '__main__':
     app.run(port=5000, host="0.0.0.0", debug=True)

@@ -1,3 +1,0 @@
-[MESSAGES CONTROL]
-disable=C0116  # Disable missing function docstring warning
-disable=C0301  # Disable line too long
