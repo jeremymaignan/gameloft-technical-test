@@ -1,5 +1,6 @@
 def is_valid_level(campaign, player):
-    return campaign["matchers"]["level"]["min"] <= player["level"] <= campaign["matchers"]["level"]["max"]
+    campaign_levels = campaign["matchers"]["level"]
+    return campaign_levels["min"] <= player["level"] <= campaign_levels["max"]
 
 def has_attr(campaign, player):
     for key, values in campaign["matchers"]["has"].items():
@@ -22,12 +23,11 @@ def does_not_have_attr(campaign, player):
                     return False
         # Check other keys (country, language, gender)
         elif player[key] in values:
-                return False
+            return False
     return True
 
 def is_valid_campaign(campaign, player):
-    for filter in (is_valid_level, has_attr, does_not_have_attr):
-        if not filter(campaign, player):
+    for condition in (is_valid_level, has_attr, does_not_have_attr):
+        if not condition(campaign, player):
             return False
-    print("campaign {} is valid".format(campaign["name"]))
     return True

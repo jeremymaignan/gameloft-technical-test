@@ -14,17 +14,15 @@ class DynamoDB:
             "players": self.client.Table("players"),
         }
 
-    def get_item_by_id(self, player_id):
+    def get_item_by_id(self, tablename, key):
         try:
-            response = self.tables["players"].get_item(
-                Key={
-                    'player_id': player_id  # Replace with your primary key name
-                }
+            response = self.tables[tablename].get_item(
+                Key=key
             )
         except ClientError as e:
             current_app.logger.error(f"Error getting item: {e.response['Error']['Message']}")
             return None
-        return response.get('Item')  # Returns None if the item doesn't exist
+        return response
 
     def save_item(self, item):
         try:
