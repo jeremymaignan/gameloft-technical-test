@@ -44,8 +44,8 @@ class TestPlayerAPI(unittest.TestCase):
     }
     campaign_mock = {
         "active_campaigns": [{
-            "game": "mygame",
-            "name": "mycampaign123",
+            "game": "game",
+            "name": "campaign2",
             "priority": 10.5,
             "matchers": {
                 "level": {
@@ -76,6 +76,7 @@ class TestPlayerAPI(unittest.TestCase):
     }
 
     def setUp(self):
+        # Create a Flask app context for testing
         app = Flask(__name__)
         app.register_blueprint(player_bp)
         self.app = app.test_client()
@@ -85,66 +86,81 @@ class TestPlayerAPI(unittest.TestCase):
             self.mock_dynamodb = MagicMock()
             app.dynamodb = self.mock_dynamodb
 
+    def tearDown(self):
+        self.mock_dynamodb.reset_mock()
+
     def test_fail_to_fetch_player_from_db(self):
+        # With
         self.mock_dynamodb.get_item_by_id.return_value = None
 
+        # When
         response = self.app.get(f'/get_client_config/{self.player_id}')
 
+        # Assert
         self.assertEqual(response.status_code, 500)
-        self.assertIn("Failed to query dynamodb", response.get_json().get("message"))
+        self.assertIn("Failed to query dynamodb", response.get_json()["message"])
 
-    def test_get_player_not_found(self):
+    def test_player_not_found_in_db(self):
+        # With
         self.mock_dynamodb.get_item_by_id.return_value = {"Item": []}
 
+        # When
         response = self.app.get(f'/get_client_config/{self.player_id}')
 
+        # Assert
         self.assertEqual(response.status_code, 404)
-        self.assertIn("Player not found in database", response.get_json().get("message"))
+        self.assertIn("Player not found in database", response.get_json()["message"])
 
-    def test_get_player_validation_error(self):
-        # Simulate invalid player format by removing a required field
-        invalid_player_mock = {"Item": {"player_id": self.player_id}}  # Missing required fields
+    def test_player_validation_error(self):
+        # With
+        invalid_player_mock = {"Item": {"player_id": self.player_id}}
         self.mock_dynamodb.get_item_by_id.return_value = invalid_player_mock
 
+        # When
         response = self.app.get(f'/get_client_config/{self.player_id}')
+
+        # Assert
         self.assertEqual(response.status_code, 422)
-        self.assertIn("Validation error", response.get_json().get("message"))
+        self.assertIn("Validation error", response.get_json()["message"])
 
     @patch('controllers.player.CampaignAPI.get')
     def test_campaign_not_found(self, mock_get):
+        # With
         self.mock_dynamodb.get_item_by_id.return_value = self.player_mock
-        mock_get.return_value = (MagicMock(json={}), 404)  # Simulate no campaigns found
+        mock_get.return_value = (MagicMock(json={}), 404)
 
+        # When
         response = self.app.get(f'/get_client_config/{self.player_id}')
+
+        # Assert
         self.assertEqual(response.status_code, 404)
-        self.assertIn("Campaign not found", response.get_json().get("message"))
+        self.assertIn("Campaign not found", response.get_json()["message"])
 
     @patch('controllers.player.CampaignAPI.get')
-    def test_player_update_with_new_campaign(self, mock_get):
-        # Simulate retrieving player from DynamoDB and campaign API response
+    def test_player_update_with_new_valid_campaign(self, mock_get):
+        # With
         self.mock_dynamodb.get_item_by_id.return_value = self.player_mock
         self.mock_dynamodb.save_item.return_value = True
         mock_response = MagicMock()
         mock_response.json = self.campaign_mock
         mock_get.return_value = (mock_response, 200)
-        # Make request to the endpoint
+
+        # When
         response = self.app.get(f'/get_client_config/{self.player_id}')
 
-        # Check response and updated player data
+        # Assert
         self.assertEqual(response.status_code, 200)
         response_json = response.get_json()
-        self.assertIn("mycampaign123", response_json["active_campaigns"])
-
-        # Verify the player data was saved with the new campaign
+        self.assertIn("campaign2", response_json["active_campaigns"])
         self.mock_dynamodb.save_item.assert_called_once_with("players", response_json)
 
     @patch('controllers.player.CampaignAPI.get')
-    def test_player_not_update_with_new_campaign(self, mock_get):
-        # Simulate retrieving player from DynamoDB and campaign API response
+    def test_player_not_updated_with_new_campaign(self, mock_get):
+        # With
         self.mock_dynamodb.get_item_by_id.return_value = self.player_mock
         self.mock_dynamodb.save_item.return_value = True
         mock_response = MagicMock()
-        invalid_campaign_mock =  copy.deepcopy(self.campaign_mock)
+        invalid_campaign_mock = copy.deepcopy(self.campaign_mock)
         invalid_campaign_mock["active_campaigns"][0]["matchers"]["level"] = {
             "min": 98,
             "max": 99
@@ -153,19 +169,34 @@ class TestPlayerAPI(unittest.TestCase):
         mock_response.json = invalid_campaign_mock
         mock_get.return_value = (mock_response, 200)
 
-        # Make request to the endpoint
+        # When
         response = self.app.get(f'/get_client_config/{self.player_id}')
 
-        # Check response and updated player data
+        # Assert
         self.assertEqual(response.status_code, 200)
         response_json = response.get_json()
         self.assertNotIn("invalid_campaign", response_json["active_campaigns"])
-
-        # Verify the player data was saved with the new campaign
         self.mock_dynamodb.save_item.assert_not_called()
 
-    def tearDown(self):
-        pass
+    @patch('controllers.player.CampaignAPI.get')
+    def test_player_already_has_current_campaign(self, mock_get):
+        # With
+        self.mock_dynamodb.get_item_by_id.return_value = self.player_mock
+        self.mock_dynamodb.save_item.return_value = True
+        mock_response = MagicMock()
+        invalid_campaign_mock = copy.deepcopy(self.campaign_mock)
+        invalid_campaign_mock["active_campaigns"][0]["name"] = "campaign_1"
+        mock_response.json = invalid_campaign_mock
+        mock_get.return_value = (mock_response, 200)
+
+        # When
+        response = self.app.get(f'/get_client_config/{self.player_id}')
+
+        # Assert
+        self.assertEqual(response.status_code, 200)
+        response_json = response.get_json()
+        self.assertEqual(response_json["active_campaigns"].count("campaign_1"), 1)
+        self.mock_dynamodb.save_item.assert_not_called()
 
 if __name__ == "__main__":
     unittest.main()
