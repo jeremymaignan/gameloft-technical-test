@@ -26,7 +26,7 @@ class TestPlayerSchema(unittest.TestCase):
             "xp": 1500,
             "total_playtime": 1000,
             "country": "US",
-            "language": "EN",
+            "language": "en",
             "birthdate": "1990-01-01 00:00:00Z",
             "gender": "male",
             "inventory": {"item1": 5, "item2": 3},

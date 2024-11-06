@@ -1,7 +1,6 @@
 from datetime import datetime
 
-from flask import current_app  # Import current_app to access the app context
-from flask import Blueprint
+from flask import Blueprint, current_app
 from flask.views import MethodView
 from marshmallow import ValidationError
 
@@ -10,8 +9,6 @@ from schemas.player import PlayerSchema
 from services.campaign import is_valid_campaign
 from services.utils import format_response
 
-# Create a Blueprint for player-related routes
-player_bp = Blueprint("players", __name__)
 
 class PlayerAPI(MethodView):
     schema = PlayerSchema()
@@ -29,7 +26,7 @@ class PlayerAPI(MethodView):
         try:
             player_data = self.schema.load(player["Item"])
         except ValidationError as err:
-            return format_response(422, f"Validation error: {err.messages}")
+            return format_response(422, "Validation error", err.messages)
         current_app.logger.debug("Player: %s", player_data)
 
         # Get campaign
@@ -37,7 +34,7 @@ class PlayerAPI(MethodView):
         if status_code != 200:
             return format_response(404, "Campaign not found")
 
-        # Check if campaign is valid
+        # Check if campaigns are valid
         updated = False
         for campaign in campaigns.json["active_campaigns"]:
             #TODO: confirm campaign names are unique
@@ -47,6 +44,8 @@ class PlayerAPI(MethodView):
                 current_app.logger.info("%s is valid", campaign["name"])
                 player_data["active_campaigns"].append(campaign["name"])
                 updated = True
+            else:
+                current_app.logger.info("%s is not valid", campaign["name"])
 
         # Update player in db if needed
         if updated:
@@ -56,7 +55,7 @@ class PlayerAPI(MethodView):
 
         return format_response(200, self.schema.dump(player_data))
 
-# Register the class-based view with a URL
+player_bp = Blueprint("players", __name__)
 player_bp.add_url_rule(
     "/get_client_config/<player_id>",
     view_func=PlayerAPI.as_view("player_api"),

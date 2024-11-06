@@ -5,7 +5,7 @@ from schemas.device import DeviceSchema
 
 
 class PlayerSchema(Schema):
-    class Meta: #pylint: disable=too-few-public-methods
+    class Meta:
         # This allows for unknown fields to be included
         unknown = INCLUDE
 
@@ -23,8 +23,8 @@ class PlayerSchema(Schema):
     level = fields.Int(required=True, validate=validate.Range(min=1))
     xp = fields.Int(required=True)
     total_playtime = fields.Int(required=True)
-    country = fields.Str(required=True, validate=validate.Length(equal=2))
-    language = fields.Str(required=True, validate=validate.Length(equal=2))
+    country = fields.Str(required=True, validate=validate.OneOf(["US", "CA", "RO", "FR"]))
+    language = fields.Str(required=True, validate=validate.OneOf(["fr", "en"]))
     birthdate = fields.DateTime(format="%Y-%m-%d %H:%M:%SZ")
     gender = fields.Str(validate=validate.OneOf(["male", "female", "other"]))
     inventory = fields.Dict(keys=fields.Str(), values=fields.Int(), required=True)

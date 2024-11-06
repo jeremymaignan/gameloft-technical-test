@@ -28,5 +28,60 @@ else
     echo "Table $TABLE_NAME already exists."
 fi
 
+# Insert the first player into the table
+aws dynamodb put-item \
+    --region $AWS_REGION \
+    --table-name $TABLE_NAME \
+    --item '{
+        "player_id": {"S": "97983be2-98b7-11e7-90cf-082e5f28d836"},
+        "credential": {"S": "apple_credential"},
+        "created": {"S": "2021-01-10 13:37:17Z"},
+        "modified": {"S": "2021-01-23 13:37:17Z"},
+        "last_session": {"S": "2021-01-23 13:37:17Z"},
+        "total_spent": {"N": "400"},
+        "total_refund": {"N": "0"},
+        "total_transactions": {"N": "5"},
+        "last_purchase": {"S": "2021-01-22 13:37:17Z"},
+        "active_campaigns": {"L": []},
+        "devices": {
+            "L": [
+                {
+                    "M": {
+                        "id": {"N": "1"},
+                        "model": {"S": "apple iphone 11"},
+                        "carrier": {"S": "vodafone"},
+                        "firmware": {"S": "123"}
+                    }
+                }
+            ]
+        },
+        "level": {"N": "3"},
+        "xp": {"N": "1000"},
+        "total_playtime": {"N": "144"},
+        "country": {"S": "CA"},
+        "language": {"S": "fr"},
+        "birthdate": {"S": "2000-01-10 13:37:17Z"},
+        "gender": {"S": "male"},
+        "inventory": {
+            "M": {
+                "cash": {"N": "123"},
+                "coins": {"N": "123"},
+                "item_1": {"N": "1"},
+                "item_34": {"N": "3"},
+                "item_55": {"N": "2"}
+            }
+        },
+        "clan": {
+            "M": {
+                "id": {"S": "123456"},
+                "name": {"S": "Hello world clan"}
+            }
+        },
+        "_customfield": {"S": "mycustom"}
+    }' \
+    --endpoint-url $DYNAMO_ENDPOINT
+
+echo "First player inserted into the DynamoDB table $TABLE_NAME."
+
 # Start the Flask application
 exec python3 api.py

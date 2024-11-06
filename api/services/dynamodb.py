@@ -17,9 +17,7 @@ class DynamoDB:
 
     def get_item_by_id(self, table_name, key):
         try:
-            response = self.tables[table_name].get_item(
-                Key=key
-            )
+            response = self.tables[table_name].get_item(Key=key)
         except ClientError as e:
             current_app.logger.error("Error getting item: %s", e.response['Error']['Message'])
             return None

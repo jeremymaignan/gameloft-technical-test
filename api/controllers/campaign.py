@@ -3,9 +3,8 @@ from flask.views import MethodView
 
 from services.utils import format_response
 
-# Create a Blueprint for campaign-related routes
-campaign_bp = Blueprint("campaigns", __name__)
 
+#TODO: Replace by a real service
 class CampaignAPI(MethodView):
     def get(self):
         active_campaigns = [{
@@ -42,7 +41,7 @@ class CampaignAPI(MethodView):
             "active_campaigns": active_campaigns
         })
 
-# Register the class-based view with a URL
+campaign_bp = Blueprint("campaigns", __name__)
 campaign_bp.add_url_rule(
     "/active_campaigns",
     view_func=CampaignAPI.as_view("campaign_api"),
