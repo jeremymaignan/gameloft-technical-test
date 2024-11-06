@@ -10,7 +10,7 @@ class CampaignAPI(MethodView):
     def get(self):
         active_campaigns = [{
             "game": "mygame",
-            "name": "mycampaign12",
+            "name": "mycampaign1",
             "priority": 10.5,
             "matchers": {
                 "level": {
@@ -38,9 +38,9 @@ class CampaignAPI(MethodView):
             "enabled": True,
             "last_updated": "2021-07-13 11:46:58Z"
         }]
-        return format_response({
+        return format_response(200, {
             "active_campaigns": active_campaigns
-        }, 200)
+        })
 
 # Register the class-based view with a URL
 campaign_bp.add_url_rule(

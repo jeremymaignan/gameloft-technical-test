@@ -15,8 +15,11 @@ load_dotenv()
 
 app.dynamodb = DynamoDB(
     url=os.getenv("DYNAMO_ENDPOINT"),
-    region=os.getenv("AWS_REGION")
+    region=os.getenv("AWS_REGION"),
+    table_names=("players", )
 )
+
+app.logger.setLevel(os.getenv("LOG_LEVEL"))
 
 # Register the blueprint
 app.register_blueprint(player_bp)

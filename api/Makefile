@@ -1,9 +1,17 @@
 # Variables
 PYTHON=python3
 FLASK_DEBUG=development
+FOLDERS = *.py \
+	controllers/*.py \
+	schemas/*.py \
+	services/*.py
+
+TESTS_FOLDERS = tests/services/*.py \
+	tests/controllers/*.py \
+	tests/schemas/*.py
 
 # Targets
-.PHONY: install run test lint clean
+.PHONY: install run test lint clean todo
 
 install: ## Install dependencies
 	@echo "Installing dependencies..."
@@ -15,23 +23,20 @@ run: ## Run the Flask application
 
 test: ## Run tests
 	@echo "Running tests..."
-	$(PYTHON) -m unittest tests/*/*.py
+	@for folder in $(TESTS_FOLDERS); do \
+		echo "Running tests in $$folder..."; \
+		$(PYTHON) -m unittest $$folder -q; \
+	done
 
 lint: ## Run linters
 	@echo "Running linters..."
-	$(PYTHON) -m isort \
-		*.py \
-		controllers/*.py \
-		schemas/*.py \
-		services/*.py \
-		tests/services/*.py
-	$(PYTHON) -m pylint --rcfile=.pylintrc \
-		*.py \
-		controllers/*.py \
-		schemas/*.py \
-		services/*.py \
-		tests/services/*.py
+	$(PYTHON) -m isort $(FOLDERS) $(TESTS_FOLDERS)
+	$(PYTHON) -m pylint --rcfile=.pylintrc $(FOLDERS) $(TESTS_FOLDERS)
 
 clean: ## Clean up the project
 	@echo "Cleaning up..."
 	find . | grep -E "(/__pycache__$$|\.pyc$$|\.pyo$$)" | xargs rm -rf
+
+todo: ## List Todos
+	@echo "List TODOs..."
+	grep -r "TODO" $(FOLDERS)
