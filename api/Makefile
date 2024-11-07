@@ -1,4 +1,3 @@
-# Variables
 PYTHON=python3.9
 FLASK_DEBUG=development
 FOLDERS = *.py \
