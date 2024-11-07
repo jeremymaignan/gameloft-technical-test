@@ -1,6 +1,7 @@
 #!/bin/bash
 
 #TODO: The table creation should be done as IaC (e.g terraform) and not here.
+#TODO: In Prod, FLASK_DEBUG should be set at 0 (set in CI based on the env)
 
 TABLE_NAME="players"
 
@@ -84,4 +85,5 @@ aws dynamodb put-item \
 echo "First player inserted into the DynamoDB table $TABLE_NAME."
 
 # Start the Flask application
+export FLASK_DEBUG=1
 exec python3 api.py

@@ -1,5 +1,5 @@
 PYTHON=python3.9
-FLASK_DEBUG=development
+FLASK_DEBUG=1
 FOLDERS = *.py \
 	controllers/*.py \
 	schemas/*.py \
